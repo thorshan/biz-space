@@ -1,21 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Paper,
   Typography,
   TextField,
   Button,
-  Link,
   Avatar,
-  Grid,
+  Alert,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { DocumentTitle } from "../../components/utils/DocumentTitle";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { translations } from "../../utils/translations";
+import LoadingModal from "../../components/utils/LoadingModal";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { ROLES } from "../../utils/constants";
 
 const Login = () => {
-  const handleSubmit = (event) => {
+  const { login } = useAuth();
+  const { language } = useLanguage();
+  const navigate = useNavigate();
+  DocumentTitle(translations[language].login);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Attempting to log in...");
+    setLoading(true);
+    try {
+      await login({ email, password });
+      navigate("/");
+    } catch (err) {
+      console.error("Error logging in", err.message);
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) return <LoadingModal status={loading} />;
 
   return (
     <Box
@@ -24,9 +50,7 @@ const Login = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-
-        backgroundImage:
-          'url("https://source.unsplash.com/random/1600x900?abstract,gradient")',
+        backgroundImage: "url('/images/cover.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
 
@@ -48,7 +72,6 @@ const Login = () => {
           p: 4,
           width: "calc(100% - 32px)",
           borderRadius: 3,
-
           backgroundColor: "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
@@ -70,9 +93,14 @@ const Login = () => {
             variant="h5"
             sx={{ mb: 2, fontWeight: "bold" }}
           >
-            Welcome Back
+            {translations[language].login}
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ mt: 2, width: "100%" }}>
+              {error}
+            </Alert>
+          )}
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -80,36 +108,36 @@ const Login = () => {
             sx={{ mt: 1, width: "100%" }}
           >
             <TextField
-              margin="normal"
+              type="email"
+              label={translations[language].email}
+              autoFocus
               required
               fullWidth
-              id="email"
-              label="Email"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              variant="outlined"
+              size="small"
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <TextField
-              margin="normal"
+              type="password"
+              label={translations[language].password}
               required
               fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              variant="outlined"
+              size="small"
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              size="large"
+              size="small"
+              disabled={loading}
               sx={{ mt: 3, mb: 2 }}
             >
-              Login
+              {translations[language].login}
             </Button>
 
             {/* Links */}

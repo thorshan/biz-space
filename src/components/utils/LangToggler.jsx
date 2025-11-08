@@ -9,7 +9,7 @@ const LANGUAGES = [
   { code: "mm", label: "မြန်မာ" },
   { code: "jp", label: "日本" },
   { code: "cn", label: "中国" },
-  { code: "kr", label: "한국" },
+  { code: "kh", label: "한국" },
   // Add more languages here
 ];
 
@@ -32,9 +32,9 @@ const LanguageToggler = () => {
     <>
       <Tooltip title="Change Language">
         <Button
-          startIcon={<LanguageIcon color="secondary" />}
+          startIcon={<LanguageIcon color="primary" />}
           onClick={handleClick}
-          color="secondary"
+          color="primary"
         >
           {currentLang.label}
         </Button>

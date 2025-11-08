@@ -8,13 +8,15 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 250,
-  zIndex: 100,
-  bgcolor: "background.paper",
-  boxShadow: 24,
+  zIndex: 1000,
+  bgcolor: "rgba(255, 255, 255, 0.7)",
+  // boxShadow: 24,
   p: 4,
   display: "flex",
   flexDirection: "column",
+  backdropFilter: "blur(10px)",
   alignItems: "center",
+  border: "1px solid rgba(255, 255, 255, 0.2)",
   outline: "none",
   borderRadius: 2, // Modern rounded corners
 };

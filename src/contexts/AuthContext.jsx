@@ -21,16 +21,6 @@ export const AuthProvider = ({ children }) => {
     setUser(user);
   }
 
-  // Register
-  async function register({ name, email, password }) {
-    const res = await authApi.register({ name, email, password });
-    const { user, token } = res.data;
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setToken(token);
-    setUser(user);
-  }
-
   // Logout
   async function logout() {
     await authApi.logout();
@@ -44,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, register, logout, isAuthenticated }}
+      value={{ user, token, login, logout, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>

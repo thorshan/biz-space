@@ -11,10 +11,12 @@ const AlertModal = ({ type, message }) => {
       onClose={() => setOpen(false)}
       sx={{
         position: "fixed",
-        top: 20,
-        left: 20,
+        top: 50,
+        left: "50%",
+        transform: "translate(-50%, -50%)",
         zIndex: 1300,
-        minWidth: 500,
+        minWidth: "80%",
+        borderRadius: 2,
       }}
     >
       {message}

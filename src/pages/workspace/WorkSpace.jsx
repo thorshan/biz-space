@@ -3,11 +3,7 @@ import {
   Typography,
   Stack,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   TextField,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -21,26 +17,17 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LoadingModal from "../../components/utils/LoadingModal";
 import { DocumentTitle } from "../../components/utils/DocumentTitle";
-import { ROLES } from "../../utils/constants";
-import { userApi } from "../../api/userApi";
+import { workspaceApi } from "../../api/workspaceApi";
 import AlertModal from "../../components/utils/AlertModal";
 
-const User = () => {
+const WorkSpace = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  DocumentTitle(translations[language].users);
+  DocumentTitle(translations[language].spaces);
 
   const [message, setMessage] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [openFormModal, setOpenFormModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "",
-  });
+  const [spaces, setSpaces] = useState([]);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -49,13 +36,13 @@ const User = () => {
 
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteUserId, setDeleteUserId] = useState(null);
+  const [deleteSpaceId, setDeleteSpaceId] = useState(null);
 
-  const fetchUsers = async () => {
+  const fetchSpaces = async () => {
     setLoading(true);
     try {
-      const res = await userApi.getAllUser();
-      setUsers(res.data);
+      const res = await workspaceApi.getAllSpace();
+      setSpaces(res.data);
     } catch (err) {
       const msg =
         err.response?.data?.message ||
@@ -68,35 +55,23 @@ const User = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchSpaces();
   }, []);
 
   const handleRefresh = () => navigate(0);
 
-  const handleAdd = () => {
-    setFormData({ name: "", email: "", password: "", role: "" });
-    setEditingUser(null);
-    setOpenFormModal(true);
-  };
-
-  const handleEdit = (user) => {
-    setFormData({ ...user, password: "" });
-    setEditingUser(user);
-    setOpenFormModal(true);
-  };
-
   const openDeleteModal = (id) => {
-    setDeleteUserId(id);
+    setDeleteSpaceId(id);
     setShowDeleteModal(true);
   };
 
   // Confirm Delete
   const handleDelete = async () => {
-    if (deleteUserId) {
+    if (deleteSpaceId) {
       try {
-        await userApi.deleteUser(deleteUserId);
-        setMessage("User deleted successfully.");
-        fetchUsers();
+        await workspaceApi.deleteSpace(deleteSpaceId);
+        setMessage("Workspace deleted successfully.");
+        fetchSpaces();
       } catch (err) {
         const msg =
           err.response?.data?.message ||
@@ -105,48 +80,24 @@ const User = () => {
         setMessage(msg);
       } finally {
         setShowDeleteModal(false);
-        setDeleteUserId(null);
+        setDeleteSpaceId(null);
       }
-    }
-  };
-
-  const handleClose = () => setOpenFormModal(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingUser) {
-        await userApi.updateUser(editingUser._id, formData);
-        setMessage("User updated successfully.");
-      } else {
-        await userApi.createUser(formData);
-        setMessage("User created successfully.");
-      }
-      setOpenFormModal(false);
-      fetchUsers();
-    } catch (err) {
-      const msg =
-        err.response?.data?.message || err.message || "Failed to save user.";
-      setMessage(msg);
     }
   };
 
   if (loading) return <LoadingModal status={loading} />;
 
   // Search filter
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase()) ||
-      user.role.toLowerCase().includes(search.toLowerCase()),
+  const filteredSpaces = spaces.filter((space) =>
+    space.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const paginatedUsers = filteredUsers.slice(
+  const paginatedSpaces = filteredSpaces.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage,
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / rowsPerPage) || 1;
+  const totalPages = Math.ceil(filteredSpaces.length / rowsPerPage) || 1;
 
   const handleNext = () => {
     if (page < totalPages) setPage(page + 1);
@@ -187,14 +138,6 @@ const User = () => {
             onClick={handleRefresh}
           >
             {translations[language].refresh}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={handleAdd}
-          >
-            {translations[language].add}
           </Button>
         </Stack>
       </Box>
@@ -250,22 +193,28 @@ const User = () => {
         <TableHead>
           <TableRow>
             <TableCell>{translations[language]._no}</TableCell>
-            <TableCell>{translations[language].name}</TableCell>
-            <TableCell>{translations[language].email}</TableCell>
-            <TableCell>{translations[language].role}</TableCell>
+            <TableCell>{translations[language].space_name}</TableCell>
+            <TableCell>{translations[language].company}</TableCell>
+            <TableCell>{translations[language].owner}</TableCell>
+            <TableCell>{translations[language].status}</TableCell>
             <TableCell align="right">{translations[language].action}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {paginatedUsers.length > 0 ? (
-            paginatedUsers.map((u, index) => (
+          {paginatedSpaces.length > 0 ? (
+            paginatedSpaces.map((u, index) => (
               <TableRow key={u._id}>
                 <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
                 <TableCell>{u.name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>{u.role}</TableCell>
+                <TableCell>{u.companyName}</TableCell>
+                <TableCell>{u.owner?.name}</TableCell>
+                <TableCell>
+                  {u.isActive
+                    ? translations[language].active
+                    : translations[language].in_active}
+                </TableCell>
                 <TableCell align="right">
-                  <Button
+                  {/* <Button
                     variant="outlined"
                     size="small"
                     color="primary"
@@ -273,7 +222,7 @@ const User = () => {
                     onClick={() => handleEdit(u)}
                   >
                     {translations[language].edit}
-                  </Button>
+                  </Button>*/}
                   <Button
                     variant="contained"
                     size="small"
@@ -317,96 +266,7 @@ const User = () => {
           {translations[language].next}
         </Button>
       </Stack>
-
-      {/* Add/Edit Modal */}
-      <Dialog
-        open={openFormModal}
-        onClose={handleClose}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editingUser
-            ? translations[language].edit
-            : translations[language].add}{" "}
-          {translations[language].user}
-        </DialogTitle>
-        <DialogContent>
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label={translations[language].name}
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              margin="normal"
-              required
-              size="small"
-            />
-            <TextField
-              fullWidth
-              label={translations[language].email}
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              margin="normal"
-              required
-              size="small"
-            />
-            <TextField
-              fullWidth
-              label={translations[language].password}
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              margin="normal"
-              size="small"
-              required={!editingUser}
-            />
-            <TextField
-              fullWidth
-              select
-              label={translations[language].role}
-              value={formData.role}
-              onChange={(e) =>
-                setFormData({ ...formData, role: e.target.value })
-              }
-              margin="normal"
-              size="small"
-              required
-            >
-              {Object.values(ROLES).map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role.toUpperCase()}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button
-                size="small"
-                variant="outlined"
-                sx={{ mr: 1 }}
-                onClick={handleClose}
-              >
-                {translations[language].cancel}
-              </Button>
-              <Button size="small" type="submit" variant="contained">
-                {editingUser
-                  ? translations[language].update || "Update"
-                  : translations[language].add}
-              </Button>
-            </Box>
-          </Box>
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };
-
-export default User;
+export default WorkSpace;
